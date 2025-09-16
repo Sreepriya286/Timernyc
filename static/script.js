@@ -899,6 +899,222 @@
 
 
 
+// let timerInterval;
+// let totalSeconds = 0;
+// let initialTotal = 0;
+// let isRunning = false;
+// let flashInterval;
+// let bellInterval;
+// let audioContext;
+
+// // Initialize audio context for fallback beep
+// function initAudio() {
+//     try {
+//         audioContext = new (window.AudioContext || window.webkitAudioContext)();
+//     } catch (e) {
+//         console.log('Web Audio API not supported');
+//     }
+// }
+
+// // Create a beep sound as fallback
+// function createBeep(frequency = 800, duration = 200) {
+//     if (!audioContext) return;
+
+//     const oscillator = audioContext.createOscillator();
+//     const gainNode = audioContext.createGain();
+
+//     oscillator.connect(gainNode);
+//     gainNode.connect(audioContext.destination);
+
+//     oscillator.frequency.value = frequency;
+//     oscillator.type = 'sine';
+
+//     gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+//     gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
+
+//     oscillator.start(audioContext.currentTime);
+//     oscillator.stop(audioContext.currentTime + duration / 1000);
+// }
+
+// // Play bell sound
+// function playBellSound() {
+//     const bellSound = document.getElementById('bell-sound');
+//     if (bellSound && bellSound.src) {
+//         bellSound.play().catch(() => createBeep());
+//     } else {
+//         createBeep();
+//     }
+// }
+
+// // Set timer
+// function setTimer() {
+//     const minutes = parseInt(document.getElementById('minutes').value) || 0;
+//     const seconds = parseInt(document.getElementById('seconds').value) || 0;
+//     totalSeconds = minutes * 60 + seconds;
+//     initialTotal = totalSeconds;
+
+//     updateTimerDisplay();
+
+//     const hostControls = document.getElementById('host-controls');
+//     const timerContainer = document.getElementById('timer-container');
+//     const toggleButton = document.getElementById('toggle-controls');
+
+//     timerContainer.style.display = 'block';
+//     hostControls.style.visibility = 'visible';
+//     toggleButton.style.display = 'none';
+//     document.body.classList.remove("blackout");
+// }
+
+// // Start timer
+// function startTimer() {
+//     if (!isRunning && totalSeconds > 0) {
+//         isRunning = true;
+//         timerInterval = setInterval(countDown, 1000);
+
+//         if (!audioContext) initAudio();
+//     }
+// }
+
+// // Pause timer
+// function pauseTimer() {
+//     clearInterval(timerInterval);
+//     isRunning = false;
+// }
+
+// // Reset timer
+// function resetTimer() {
+//     clearInterval(timerInterval);
+//     clearInterval(flashInterval);
+//     clearInterval(bellInterval);
+//     totalSeconds = initialTotal;
+//     isRunning = false;
+//     updateTimerDisplay();
+//     stopFlashing();
+
+//     const hostControls = document.getElementById('host-controls');
+//     const timerContainer = document.getElementById('timer-container');
+//     const toggleButton = document.getElementById('toggle-controls');
+
+//     timerContainer.style.display = 'block';
+//     hostControls.style.visibility = 'visible';
+//     toggleButton.style.display = 'none';
+//     document.body.classList.remove("blackout");
+// }
+
+// // Add/Subtract time
+// function addTime() { totalSeconds += 60; initialTotal += 60; updateTimerDisplay(); }
+// function subtractTime() { totalSeconds = Math.max(0, totalSeconds - 60); initialTotal = Math.max(0, initialTotal - 60); updateTimerDisplay(); }
+
+// // Update display
+// function updateTimerDisplay() {
+//     const minutes = Math.floor(totalSeconds / 60);
+//     const seconds = totalSeconds % 60;
+//     const timerDisplay = document.getElementById('timer-display');
+
+//     if (totalSeconds > 0) {
+//         timerDisplay.style.fontSize = "450px";
+//         timerDisplay.textContent = `${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
+//     } else {
+//         timerDisplay.style.fontSize = "200px";
+//         timerDisplay.textContent = "Time's Up!";
+//     }
+// }
+
+// // Countdown logic
+// function countDown() {
+//     if (totalSeconds > 0) {
+//         totalSeconds--;
+//         updateTimerDisplay();
+
+//         const timerContainer = document.getElementById('timer-container');
+//         const hostControls = document.getElementById('host-controls');
+//         const toggleButton = document.getElementById('toggle-controls');
+
+//         // Auto-hide/show logic
+//         if (totalSeconds <= 300) { // last 5 minutes
+//             timerContainer.style.display = 'block';
+//             hostControls.style.visibility = 'visible';
+//             toggleButton.style.display = 'none';
+//             document.body.classList.remove("blackout");
+//         } else if (totalSeconds <= initialTotal - 60) { // after 1 minute
+//             timerContainer.style.display = 'none';
+//             hostControls.style.visibility = 'hidden';
+//             toggleButton.style.display = 'block';
+//             document.body.classList.add("blackout");
+//         } else { // first minute
+//             timerContainer.style.display = 'block';
+//             hostControls.style.visibility = 'visible';
+//             toggleButton.style.display = 'none';
+//             document.body.classList.remove("blackout");
+//         }
+
+//         // Automatic bell based on user input
+//         const bellTime = parseInt(document.getElementById('bell-seconds').value);
+//         if (totalSeconds === bellTime) {
+//             startBellAndFlashing();
+//         }
+
+//         // Last 5 seconds flash
+//         if (totalSeconds <= 5) startFlashing();
+
+//     } else {
+//         resetTimer();
+//         document.getElementById('timer-display').textContent = "Time's Up!";
+//     }
+// }
+
+// // Toggle host controls manually
+// function toggleControls() {
+//     const hostControls = document.getElementById('host-controls');
+//     const toggleButton = document.getElementById('toggle-controls');
+
+//     hostControls.style.visibility = 'visible';
+//     toggleButton.style.display = 'none';
+// }
+
+// // Start bell + flashing
+// function startBellAndFlashing() {
+//     bellInterval = setInterval(() => {
+//         if (totalSeconds > 0) playBellSound();
+//         else clearInterval(bellInterval);
+//     }, 1000);
+
+//     startFlashing();
+// }
+
+// // Manual bell
+// function playBellNow() {
+//     if (!audioContext) initAudio();
+//     let duration = 10;
+//     playBellSound();
+
+//     bellInterval = setInterval(() => {
+//         if (duration > 1) { playBellSound(); duration--; }
+//         else { clearInterval(bellInterval); stopFlashing(); }
+//     }, 1000);
+
+//     startFlashing();
+// }
+
+// // Flashing background
+// function startFlashing() {
+//     if (!flashInterval) {
+//         flashInterval = setInterval(() => {
+//             document.body.style.backgroundColor = document.body.style.backgroundColor === 'red' ? 'black' : 'red';
+//         }, 500);
+//     }
+// }
+
+// function stopFlashing() {
+//     clearInterval(flashInterval);
+//     flashInterval = null;
+//     document.body.style.backgroundColor = 'black';
+// }
+
+// // Initialize audio
+// document.addEventListener('DOMContentLoaded', function() { });
+
+
 let timerInterval;
 let totalSeconds = 0;
 let initialTotal = 0;
@@ -906,6 +1122,7 @@ let isRunning = false;
 let flashInterval;
 let bellInterval;
 let audioContext;
+let bellTriggered = false; // ensures bell triggers only once
 
 // Initialize audio context for fallback beep
 function initAudio() {
@@ -952,6 +1169,7 @@ function setTimer() {
     const seconds = parseInt(document.getElementById('seconds').value) || 0;
     totalSeconds = minutes * 60 + seconds;
     initialTotal = totalSeconds;
+    bellTriggered = false; // reset bell flag
 
     updateTimerDisplay();
 
@@ -988,6 +1206,7 @@ function resetTimer() {
     clearInterval(bellInterval);
     totalSeconds = initialTotal;
     isRunning = false;
+    bellTriggered = false; // reset bell
     updateTimerDisplay();
     stopFlashing();
 
@@ -1050,7 +1269,8 @@ function countDown() {
 
         // Automatic bell based on user input
         const bellTime = parseInt(document.getElementById('bell-seconds').value);
-        if (totalSeconds === bellTime) {
+        if (!isNaN(bellTime) && !bellTriggered && totalSeconds <= bellTime) {
+            bellTriggered = true;
             startBellAndFlashing();
         }
 
@@ -1072,11 +1292,21 @@ function toggleControls() {
     toggleButton.style.display = 'none';
 }
 
-// Start bell + flashing
+// Start bell + flashing for 5 seconds
 function startBellAndFlashing() {
+    if (!audioContext) initAudio();
+
+    let duration = 5; // ring for 5 seconds
+    playBellSound();
+
     bellInterval = setInterval(() => {
-        if (totalSeconds > 0) playBellSound();
-        else clearInterval(bellInterval);
+        if (duration > 1) {
+            playBellSound();
+            duration--;
+        } else {
+            clearInterval(bellInterval);
+            stopFlashing();
+        }
     }, 1000);
 
     startFlashing();
@@ -1085,12 +1315,17 @@ function startBellAndFlashing() {
 // Manual bell
 function playBellNow() {
     if (!audioContext) initAudio();
-    let duration = 10;
+    let duration = 5;
     playBellSound();
 
     bellInterval = setInterval(() => {
-        if (duration > 1) { playBellSound(); duration--; }
-        else { clearInterval(bellInterval); stopFlashing(); }
+        if (duration > 1) {
+            playBellSound();
+            duration--;
+        } else {
+            clearInterval(bellInterval);
+            stopFlashing();
+        }
     }, 1000);
 
     startFlashing();
@@ -1111,9 +1346,10 @@ function stopFlashing() {
     document.body.style.backgroundColor = 'black';
 }
 
-// Initialize audio
-document.addEventListener('DOMContentLoaded', function() { });
-
+// Initialize audio when DOM is ready
+document.addEventListener('DOMContentLoaded', function() { 
+    initAudio();
+});
 
 
 
