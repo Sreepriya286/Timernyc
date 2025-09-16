@@ -1352,6 +1352,171 @@
 // });
 
 
+// let timerInterval;
+// let totalSeconds = 0;
+// let isRunning = false;
+// let bellTime = 10;
+// let flashInterval;
+// let bellInterval;
+
+// // Function to set the initial timer values
+// function setTimer() {
+//     const minutes = parseInt(document.getElementById('minutes').value);
+//     const seconds = parseInt(document.getElementById('seconds').value);
+//     totalSeconds = minutes * 60 + seconds;
+//     updateTimerDisplay();
+// }
+
+// // Function to start the timer countdown
+// function startTimer() {
+//     if (!isRunning && totalSeconds > 0) {
+//         isRunning = true;
+//         bellTime = parseInt(document.getElementById('bell-seconds').value); // Get the bell time
+//         timerInterval = setInterval(countDown, 1000);
+//     }
+// }
+
+// // Function to pause the timer
+// function pauseTimer() {
+//     clearInterval(timerInterval);
+//     isRunning = false;
+// }
+
+// // Function to reset the timer
+// function resetTimer() {
+//     clearInterval(timerInterval);
+//     clearInterval(flashInterval);
+//     clearInterval(bellInterval);
+//     totalSeconds = 0;
+//     isRunning = false;
+//     updateTimerDisplay();
+//     stopFlashing();
+
+//     // Always reset UI
+//     document.getElementById('timer-container').style.display = 'block';
+//     document.getElementById('host-controls').style.display = 'block';
+// }
+
+// // Function to add 1 minute to the timer
+// function addTime() {
+//     totalSeconds += 60;
+//     updateTimerDisplay();
+// }
+
+// // Function to subtract 1 minute from the timer
+// function subtractTime() {
+//     totalSeconds = Math.max(0, totalSeconds - 60);
+//     updateTimerDisplay();
+// }
+
+// // Function to update the displayed timer
+// function updateTimerDisplay() {
+//     const minutes = Math.floor(totalSeconds / 60);
+//     const seconds = totalSeconds % 60;
+    
+//     const timerDisplay = document.getElementById('timer-display');
+    
+//     if (totalSeconds > 0) {
+//         timerDisplay.style.fontSize = "450px"; // Normal timer font size
+//         timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+//     } else {
+//         timerDisplay.style.fontSize = "200px"; // Smaller font for "Time's Up!" message
+//         timerDisplay.textContent = "Time's Up!";
+//     }
+// }
+
+// // Function to handle the countdown logic
+// function countDown() {
+//     if (totalSeconds > 0) {
+//         totalSeconds--;
+//         updateTimerDisplay();
+
+//         // --- NEW UI LOGIC ---
+//         const timerContainer = document.getElementById('timer-container');
+//         const hostControls = document.getElementById('host-controls');
+
+//         if (totalSeconds <= 65) {
+//             // Show again in last 65 seconds
+//             timerContainer.style.display = 'block';
+//             hostControls.style.display = 'block';
+//         } else if (totalSeconds <= (Math.max(0, totalSeconds) - 60)) {
+//             // Hide after 1 minute has passed
+//             timerContainer.style.display = 'none';
+//             hostControls.style.display = 'none';
+//         } else {
+//             // Keep visible during the first minute
+//             timerContainer.style.display = 'block';
+//             hostControls.style.display = 'block';
+//         }
+//         // --- END UI LOGIC ---
+
+//         // Trigger the bell and flashing together when the time reaches the bellTime
+//         if (totalSeconds === bellTime) {
+//             startBellAndFlashing();
+//         }
+
+//         // Ensure the flashing continues until the timer reaches zero
+//         if (totalSeconds <= 5) {
+//             startFlashing();
+//         }
+
+//     } else {
+//         resetTimer();
+//         document.getElementById('timer-display').textContent = "Time's Up!";
+//     }
+// }
+
+// // Function to start the bell and flashing simultaneously
+// function startBellAndFlashing() {
+//     // Start the bell sound every second for the remaining time until zero
+//     bellInterval = setInterval(() => {
+//         if (totalSeconds > 0) {
+//             document.getElementById('bell-sound').play();
+//         } else {
+//             clearInterval(bellInterval);
+//         }
+//     }, 1000);
+
+//     // Start flashing the background
+//     startFlashing();
+// }
+
+// // Manual bell play function with synchronized flashing for 10 seconds
+// function playBellNow() {
+//     let duration = 10; // Duration for the bell and flash
+//     document.getElementById('bell-sound').play();
+
+//     bellInterval = setInterval(() => {
+//         if (duration > 1) {
+//             document.getElementById('bell-sound').play();
+//             duration--;
+//         } else {
+//             clearInterval(bellInterval);
+//             stopFlashing(); // Stop flashing after 10 seconds
+//         }
+//     }, 1000);
+
+//     startFlashing();
+// }
+
+// // Function to start flashing background color
+// function startFlashing() {
+//     if (!flashInterval) {
+//         flashInterval = setInterval(() => {
+//             document.body.style.backgroundColor = 
+//                 document.body.style.backgroundColor === 'red' ? 'black' : 'red';
+//         }, 500);
+//     }
+// }
+
+// // Stop flashing and reset background color to black
+// function stopFlashing() {
+//     clearInterval(flashInterval);
+//     flashInterval = null;
+//     document.body.style.backgroundColor = 'black';
+// }
+
+
 let timerInterval;
 let totalSeconds = 0;
 let isRunning = false;
@@ -1392,7 +1557,7 @@ function resetTimer() {
     updateTimerDisplay();
     stopFlashing();
 
-    // Always reset UI
+    // Always reset UI to visible
     document.getElementById('timer-container').style.display = 'block';
     document.getElementById('host-controls').style.display = 'block';
 }
@@ -1431,24 +1596,20 @@ function countDown() {
         totalSeconds--;
         updateTimerDisplay();
 
-        // --- NEW UI LOGIC ---
+        // --- NEW UI HIDING LOGIC ---
         const timerContainer = document.getElementById('timer-container');
         const hostControls = document.getElementById('host-controls');
 
-        if (totalSeconds <= 65) {
-            // Show again in last 65 seconds
+        if (totalSeconds <= 300 || totalSeconds > (initialTotalSeconds - 60)) {
+            // Show during first minute and last 5 minutes
             timerContainer.style.display = 'block';
             hostControls.style.display = 'block';
-        } else if (totalSeconds <= (Math.max(0, totalSeconds) - 60)) {
-            // Hide after 1 minute has passed
+        } else {
+            // Hide in between
             timerContainer.style.display = 'none';
             hostControls.style.display = 'none';
-        } else {
-            // Keep visible during the first minute
-            timerContainer.style.display = 'block';
-            hostControls.style.display = 'block';
         }
-        // --- END UI LOGIC ---
+        // --- END NEW UI HIDING LOGIC ---
 
         // Trigger the bell and flashing together when the time reaches the bellTime
         if (totalSeconds === bellTime) {
@@ -1468,7 +1629,6 @@ function countDown() {
 
 // Function to start the bell and flashing simultaneously
 function startBellAndFlashing() {
-    // Start the bell sound every second for the remaining time until zero
     bellInterval = setInterval(() => {
         if (totalSeconds > 0) {
             document.getElementById('bell-sound').play();
@@ -1477,13 +1637,12 @@ function startBellAndFlashing() {
         }
     }, 1000);
 
-    // Start flashing the background
     startFlashing();
 }
 
 // Manual bell play function with synchronized flashing for 10 seconds
 function playBellNow() {
-    let duration = 10; // Duration for the bell and flash
+    let duration = 10;
     document.getElementById('bell-sound').play();
 
     bellInterval = setInterval(() => {
@@ -1492,7 +1651,7 @@ function playBellNow() {
             duration--;
         } else {
             clearInterval(bellInterval);
-            stopFlashing(); // Stop flashing after 10 seconds
+            stopFlashing();
         }
     }, 1000);
 
@@ -1516,4 +1675,13 @@ function stopFlashing() {
     document.body.style.backgroundColor = 'black';
 }
 
+// Track initial total time for UI logic
+let initialTotalSeconds = 0;
+function setTimer() {
+    const minutes = parseInt(document.getElementById('minutes').value);
+    const seconds = parseInt(document.getElementById('seconds').value);
+    totalSeconds = minutes * 60 + seconds;
+    initialTotalSeconds = totalSeconds; // store starting value
+    updateTimerDisplay();
+}
 
