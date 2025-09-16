@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speaker Timer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div id="timer-container">
+        <h1 id="timer-display">00:00</h1>
+    </div>
+
+    <div id="host-controls">
+        <h2>Host Controls</h2>
+        
+        <!-- Time Settings Section -->
+        <div class="control-section">
+            <label for="minutes">Minutes:</label>
+            <input type="number" id="minutes" value="0" min="0">
+            <label for="seconds">Seconds:</label>
+            <input type="number" id="seconds" value="0" min="0">
+            <button onclick="setTimer()">Set Timer</button>
+        </div>
+
+        <!-- Timer Control Buttons Section -->
+        <div class="control-section">
+            <button onclick="startTimer()">Start</button>
+            <button onclick="pauseTimer()">Pause</button>
+            <button onclick="resetTimer()">Reset</button>
+        </div>
+
+        <!-- Time Adjustment Section -->
+        <div class="control-section">
+            <button onclick="addTime()">+1 Min</button>
+            <button onclick="subtractTime()">-1 Min</button>
+        </div>
+
+        <!-- Bell and Flash Settings Section -->
+        <div class="control-section">
+            <label for="bell-seconds">Bell at (seconds remaining):</label>
+            <input type="number" id="bell-seconds" value="10" min="1">
+            <button onclick="playBellNow()">Play Bell Now</button>
+        </div>
+
+        <audio id="bell-sound" src="{{ url_for('static', filename='bellv2.mp3') }}"></audio>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

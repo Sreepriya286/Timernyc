@@ -1,0 +1,77 @@
+/* Full-screen setup */
+body {
+    font-family: Arial, sans-serif;
+    background-color: black;
+    color: white;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+    flex-direction: column; /* Align timer and controls vertically */
+}
+
+/* Timer container fills most of the screen */
+#timer-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+    margin-top: -192px; /* Move the timer upward by approximately 2 inches */
+}
+
+#timer-display {
+    font-size: 450px; /* Increase font size to 450px for an even larger timer display */
+    color: white;
+    margin-bottom: 20px;
+    transition: font-size 0.3s ease; /* Smooth transition for font size change */
+}
+
+
+/* Host controls positioned horizontally at the bottom */
+#host-controls {
+    background-color: rgba(0, 0, 0, 0.8);
+    border: 1px solid white;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 10px;
+    color: white;
+    width: auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+/* Control sections arranged in a row */
+.control-section {
+    margin: 0 10px; /* Horizontal margin between control groups */
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+}
+
+/* Input and button styles */
+button, input {
+    margin: 3px;
+    padding: 5px;
+    font-size: 10px;
+    background-color: #555;
+    color: white;
+    border: none;
+    border-radius: 3px;
+}
+
+button:hover {
+    background-color: #888;
+}
+
+button:active {
+    background-color: #aaa;
+}
+
+input[type="number"] {
+    width: 50px;
+    text-align: center;
+}
