@@ -153,29 +153,78 @@
 
 let timerInterval;
 let totalSeconds = 0;
-let initialTotalSeconds = 0;  // store the starting time
+let initialTotal = 0; // For blackout logic reference
 let isRunning = false;
 let bellTime = 10;
 let flashInterval;
 let bellInterval;
+let audioContext;
+
+// Initialize audio context for fallback beep
+function initAudio() {
+    try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    } catch (e) {
+        console.log('Web Audio API not supported');
+    }
+}
+
+// Create a simple beep sound using Web Audio API
+function createBeep(frequency = 800, duration = 200) {
+    if (!audioContext) return;
+    
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.value = frequency;
+    oscillator.type = 'sine';
+    
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + duration / 1000);
+}
+
+// Play bell sound with fallback
+function playBellSound() {
+    const bellSound = document.getElementById('bell-sound');
+    if (bellSound && bellSound.src) {
+        bellSound.play().catch(() => {
+            createBeep();
+        });
+    } else {
+        createBeep();
+    }
+}
 
 // Function to set the initial timer values
 function setTimer() {
-    const minutes = parseInt(document.getElementById('minutes').value);
-    const seconds = parseInt(document.getElementById('seconds').value);
+    const minutes = parseInt(document.getElementById('minutes').value) || 0;
+    const seconds = parseInt(document.getElementById('seconds').value) || 0;
     totalSeconds = minutes * 60 + seconds;
-    initialTotalSeconds = totalSeconds;  // save the starting time
+    initialTotal = totalSeconds; // Store original duration for blackout logic
+
     updateTimerDisplay();
-    document.getElementById('timer-container').style.display = 'block'; // show timer initially
-    document.body.style.backgroundColor = ''; // reset background
+
+    // Show timer + host controls initially
+    document.getElementById('timer-container').style.display = 'block'; 
+    document.getElementById('host-controls').style.display = 'block';
+    document.getElementById('toggle-controls').style.display = 'none';
+    document.body.classList.remove("blackout");
 }
 
 // Function to start the timer countdown
 function startTimer() {
     if (!isRunning && totalSeconds > 0) {
         isRunning = true;
-        bellTime = parseInt(document.getElementById('bell-seconds').value); // Get the bell time
+        bellTime = parseInt(document.getElementById('bell-seconds').value); 
         timerInterval = setInterval(countDown, 1000);
+        
+        if (!audioContext) initAudio(); // Initialize audio context on first interaction
     }
 }
 
@@ -190,69 +239,87 @@ function resetTimer() {
     clearInterval(timerInterval);
     clearInterval(flashInterval);
     clearInterval(bellInterval);
-    totalSeconds = 0;
+    totalSeconds = initialTotal;
     isRunning = false;
     updateTimerDisplay();
     stopFlashing();
-    document.getElementById('timer-container').style.display = 'block';
-    document.body.style.backgroundColor = '';
+
+    // Reset visibility
+    document.getElementById('timer-container').style.display = 'block'; 
+    document.getElementById('host-controls').style.display = 'block';
+    document.getElementById('toggle-controls').style.display = 'none';
+    document.body.classList.remove("blackout");
 }
 
-// Function to add 1 minute to the timer
+// Function to add 1 minute
 function addTime() {
     totalSeconds += 60;
+    initialTotal += 60; 
     updateTimerDisplay();
 }
 
-// Function to subtract 1 minute from the timer
+// Function to subtract 1 minute
 function subtractTime() {
     totalSeconds = Math.max(0, totalSeconds - 60);
+    initialTotal = Math.max(0, initialTotal - 60);
     updateTimerDisplay();
 }
 
-// Function to update the displayed timer
+// Update timer display and blackout logic
 function updateTimerDisplay() {
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
-    
     const timerDisplay = document.getElementById('timer-display');
-    
+
     if (totalSeconds > 0) {
-        timerDisplay.style.fontSize = "450px"; // Normal timer font size
+        timerDisplay.style.fontSize = "450px"; 
         timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     } else {
-        timerDisplay.style.fontSize = "200px"; // Smaller font for "Time's Up!" message
+        timerDisplay.style.fontSize = "200px";
         timerDisplay.textContent = "Time's Up!";
+    }
+
+    // Blackout logic
+    const body = document.body;
+    if (totalSeconds <= initialTotal - 60 && totalSeconds > 300) {
+        body.classList.add("blackout"); // Hide timer + controls
+    } else {
+        body.classList.remove("blackout");
     }
 }
 
-// Function to handle the countdown logic
+// Countdown function
 function countDown() {
     if (totalSeconds > 0) {
         totalSeconds--;
         updateTimerDisplay();
 
+        const timerContainer = document.getElementById('timer-container');
+        const hostControls = document.getElementById('host-controls');
+        const toggleButton = document.getElementById('toggle-controls');
+
         // Visibility logic
-        if (totalSeconds <= 5 * 60) {
-            // Show timer in last 5 minutes
-            document.getElementById('timer-container').style.display = 'block';
-            document.body.style.backgroundColor = 'black'; 
-        } else if (totalSeconds <= initialTotalSeconds - 60) {
-            // After 1 minute, hide timer
-            document.getElementById('timer-container').style.display = 'none';
-            document.body.style.backgroundColor = 'black';
-        } else {
-            // First minute: show timer
-            document.getElementById('timer-container').style.display = 'block';
-            document.body.style.backgroundColor = ''; 
+        if (totalSeconds <= 300) { // last 5 minutes
+            timerContainer.style.display = 'block';
+            hostControls.style.display = 'block';
+            toggleButton.style.display = 'none';
+            document.body.classList.remove("blackout");
+        } else if (totalSeconds <= initialTotal - 60) { // after first minute
+            timerContainer.style.display = 'none';
+            hostControls.style.display = 'none';
+            toggleButton.style.display = 'block'; // show toggle
+            document.body.classList.add("blackout");
+        } else { // first minute
+            timerContainer.style.display = 'block';
+            hostControls.style.display = 'block';
+            toggleButton.style.display = 'none';
+            document.body.classList.remove("blackout");
         }
 
-        // Trigger the bell and flashing together when the time reaches the bellTime
         if (totalSeconds === bellTime) {
             startBellAndFlashing();
         }
 
-        // Ensure the flashing continues until the timer reaches zero
         if (totalSeconds <= 5) {
             startFlashing();
         }
@@ -263,42 +330,54 @@ function countDown() {
     }
 }
 
-// Function to start the bell and flashing simultaneously
+// Toggle host controls manually
+function toggleControls() {
+    const hostControls = document.getElementById('host-controls');
+    const toggleButton = document.getElementById('toggle-controls');
+
+    if (hostControls.style.display === 'none') {
+        hostControls.style.display = 'block';
+        toggleButton.style.display = 'none';
+    } else {
+        hostControls.style.display = 'none';
+        toggleButton.style.display = 'block';
+    }
+}
+
+// Start bell + flashing
 function startBellAndFlashing() {
-    // Start the bell sound every second for the remaining time until zero
     bellInterval = setInterval(() => {
         if (totalSeconds > 0) {
-            document.getElementById('bell-sound').play();
+            playBellSound();
         } else {
             clearInterval(bellInterval);
         }
     }, 1000);
 
-    // Start flashing the background
     startFlashing();
 }
 
-// Manual bell play function with synchronized flashing for 10 seconds
+// Manual bell
 function playBellNow() {
-    let duration = 10; // Duration for the bell and flash
-
-    // Play the bell immediately, then every second for the remaining 9 seconds
-    document.getElementById('bell-sound').play();
+    if (!audioContext) initAudio();
+    
+    let duration = 10; 
+    playBellSound();
 
     bellInterval = setInterval(() => {
-        if (duration > 1) {
-            document.getElementById('bell-sound').play();
+        if (duration > 1) { 
+            playBellSound();
             duration--;
         } else {
             clearInterval(bellInterval);
-            stopFlashing(); // Stop flashing after 10 seconds
+            stopFlashing();
         }
     }, 1000);
 
     startFlashing();
 }
 
-// Function to start flashing background color
+// Flashing background
 function startFlashing() {
     if (!flashInterval) {
         flashInterval = setInterval(() => {
@@ -308,9 +387,15 @@ function startFlashing() {
     }
 }
 
-// Stop flashing and reset background color to black
 function stopFlashing() {
     clearInterval(flashInterval);
     flashInterval = null;
     document.body.style.backgroundColor = 'black';
 }
+
+// Initialize audio on page load (will actually start on first user interaction)
+document.addEventListener('DOMContentLoaded', function() {
+    // Browser policies require user interaction before audio can play
+});
+
+
